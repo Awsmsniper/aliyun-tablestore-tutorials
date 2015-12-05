@@ -1,0 +1,10 @@
+Metadata-Version: 1.1
+Name: ots2-python-sdk
+Version: 2.0.5
+Summary: SDK of Open Table Service
+Home-page: http://ots.aliyun.com
+Author: Haowei YAO, Kunpeng HAN
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires: protobuf

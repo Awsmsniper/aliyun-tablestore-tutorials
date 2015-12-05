@@ -1,0 +1,54 @@
+body{ 
+    font: normal 100% 'Arial','Helvetica','Verdana',sans-serif; 
+    color: #333; 
+} 
+p { 
+    padding: 12px 0; 
+    margin: 0; 
+    font-size: .8em; 
+    line-height: 1.5; 
+} 
+form { 
+    margin: 0; 
+} 
+#search_box { 
+    width: 201px; 
+    height: 40px; 
+} 
+#search_box #s { 
+    float: left; 
+    padding: 0; 
+    margin: 6px 0 0 6px; 
+    width: 159px; 
+    height: 30px;
+} 
+#search_box #go { 
+    float: right; 
+    margin: 11px 0 0 0; 
+} 
+
+.ul-bottom {
+    padding: 0 10px 40px 10px;
+    float: left;
+}
+
+.li-link {
+    list-style: none;
+    float: left;
+    padding: 4px 4px;
+}
+
+.a-link {
+    display: block;
+    min-width: 34px;
+    margin-right: 10px;
+    text-align: center;
+    height: 34px;
+    line-height: 34px;
+}
+
+.a-focus {
+    border: 3px solid thistle;
+    margin-top: -2px;
+}
+

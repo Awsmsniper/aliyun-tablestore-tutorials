@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Search On OTS & Elasticsearch</title>
+    <link rel="stylesheet" href="/static/css/base.css" />
+    <script src="/static/vue/vue.js"></script>
+    <script src="/static/vue/vue-resource.js"></script>
+  </head>
+  <body>
+    <h1>Search On OTS & Elasticsearch</h1>
+    <div id="container">
+        <p><input type="radio" id="choose_search" value="普通搜索" checked="checked" v-model="picked">普通搜索</p>
+        <div id="search_box"> 
+            <input type="text" id="s" value="" v-model="kws"/> 
+            <!--input type="image" src="/static/images/btn_search_box.gif" width="27" height="24" id="go" alt="Search" title="Search" v-on:click="search"/--> 
+        </div> 
+        <p><input type="radio" id="choose_advsearch" value="高级搜索" v-model="picked">高级搜索</p>
+        <div id="adv_search_box"> 
+            <p>匹配以下所有字词：<input type="text" id="adv_must_kws" value="" v-model="adv_must_kws"/></p>
+            <p>不匹配以下任意字词：<input type="text" id="adv_must_not_kws" value="" v-model="adv_must_not_kws"/></p>
+            <p>匹配以下字词：<input type="text" id="adv_should_kws" value="" v-model="adv_should_kws"/> 
+            至少<input type="text" id="adv_should_cnt" value="" v-model="adv_should_cnt"/> 个</p>
+            <p>字词出现的位置：
+                <select v-model="adv_fields">
+                    <option selected>全部</option>
+                    <option>关键词</option>
+                    <option>简介</option>
+                    <option>正文</option>
+                </select>
+            </p>
+            <br>
+            <span>你选择了: {{ picked }} </span>
+            <input type="image" src="/static/images/btn_search_box.gif" width="27" height="24" id="advgo" alt="AdvSearch" title="AdvSearch" v-on:click="search"/> 
+            <br>
+        </div> 
+        <div>
+            <p> 查询到 {{ count }} 条结果, 以下显示 {{ start }} 到 {{ end }} 条。 </p>
+            <li v-for="item in items">
+                <div>
+                    <h3>{{ item.fields.title }}<h3>
+                    <a href=" {{ item.fields.url }} "> {{ item.fields.url }} </a>
+                    <br />
+                    <br />
+                    <button v-on:click="detail($index)">查看正文（爬虫抽取的内容）</button>
+                    <p>{{{ item.content }}} </p>
+                </div>
+            </li>
+            <ul class="ul-bottom"> 
+                <li v-for="link in links" class="li-link" >
+                    <a href="#" v-on:click="page($index)" class="a-link" v-bind:class="{ 'a-focus': link.is_focus }">  {{ link.number }} </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        var vm = new Vue({
+                    el: '#container',
+                    data: {
+                        page_size: 10,
+                        link_side: 4,
+                        count : 0,
+                        start : 0,
+                        end : 0
+                    },
+                    methods: {
+                        do_search: function(offset) {
+                            if (this.picked == "普通搜索") {
+                                var search_args = {
+                                    "search_type": "normal_search",
+                                    "kws": this.kws,
+                                    "size": this.page_size,
+                                    "offset": offset
+                                }
+                            } else if (this.picked == "高级搜索"){
+                                var adv_fields = ""
+                                if (this.adv_fields == "全部") {
+                                    adv_fields = "all"
+                                } else if (this.adv_fields == "关键词") {
+                                    adv_fields = "keywords"
+                                } else if (this.adv_fields == "简介") {
+                                    adv_fields = "description"
+                                } else if (this.adv_fields == "正文") {
+                                    adv_fields = "content"
+                                } else {
+                                    alert("fatal error")
+                                }
+
+                                var search_args = {
+                                    "search_type": "adv_search",
+                                    "adv_must_kws": this.adv_must_kws,
+                                    "adv_must_not_kws": this.adv_must_not_kws,
+                                    "adv_should_kws": this.adv_should_kws,
+                                    "adv_should_cnt": this.adv_should_cnt,
+                                    "adv_fields": adv_fields,
+                                    "size": this.page_size,
+                                    "offset": offset
+                                }
+                            } else {
+                                alert("请选择一种搜索类型！");
+                            }
+                            this.$http.get('/search', search_args, function(data, status, request) {
+                                    this.count = data["count"];
+                                    this.start = Math.min(this.count, offset + 1);
+                                    this.end = Math.min(this.count, this.start + this.page_size - 1);
+                                    var items = data["items"];
+                                    for (i in items) {
+                                        items[i].content = "";
+                                        var title = items[i]["fields"]["title"][0];
+                                        items[i]["fields"]["title"][0] = title.substr(7, title.length - 15);
+                                    }
+                                    this.$set("items", items)
+                                    
+                                    var link_num = offset / this.page_size + 1;
+                                    var link_start = Math.max(1, link_num - this.link_side);
+                                    var link_end = Math.min(link_start + this.link_side * 2, (this.count - 1) / this.page_size + 1)
+                                    var links = new Array();
+                                    for (var i = link_start; i <= link_end; i++) {
+                                        links.push({
+                                            "is_focus": i == link_num, 
+                                            "number": i
+                                        });
+                                    }
+                                    this.$set("links", links);
+                            })
+                        },
+                        search: function(event) {
+                            this.do_search(0);
+                        },
+                        detail: function(index) {
+                            item = this.items[index];
+                            key = item._id;
+                            this.$http.get('/data', {
+                                    "key": key
+                                }, function(data, status, request) {
+                                    data.content = data.content.replace(/\n/g,"<br />");
+                                    item.content = data.content;
+                                    this.items.$set(index, item)
+                            })
+                        },
+                        page: function(index) {
+                            var link_num = this.links[index].number;
+                            var offset = (link_num - 1) * this.page_size;
+                            this.do_search(offset); 
+                        }
+                    }
+                })
+    </script>
+  </body>
+</html>
