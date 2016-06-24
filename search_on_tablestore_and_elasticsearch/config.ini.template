@@ -4,8 +4,8 @@ accessid=xxx
 accesskey=xxx
 instance_name=xxx
 table_name=elasticsearch_data
-read_cu=1000
-write_cu=1000
+read_cu=0
+write_cu=0
 
 [elasticsearch]
 cluster_name=ots_elasticsearch
