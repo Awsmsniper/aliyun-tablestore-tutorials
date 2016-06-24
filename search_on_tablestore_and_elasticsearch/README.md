@@ -82,8 +82,8 @@
             
             #以下参数可以用默认值。
             table_name=elasticsearch_data  #TableStore的表名
-            read_cu=1000              #表的预留读能力单元，同时与计费相关
-            write_cu=1000             #表的预留写能力单元，同时与计费相关
+            read_cu=0              #表的预留读能力单元，同时与计费相关
+            write_cu=0             #表的预留写能力单元，同时与计费相关
     
             [elasticsearch]
             cluster_name=ots_elasticsearch
